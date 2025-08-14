@@ -143,84 +143,29 @@ def download_dataset(dataset, args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Download datasets and checkpoints')
-    parser.add_argument('--contents',
-                        nargs='+',
-                        default=['datasets', 'checkpoints'])
-    parser.add_argument('--datasets', nargs='+', default=['default'])
-    parser.add_argument('--checkpoints', nargs='+', default=['all'])
+        description='Download specific OOD datasets')
     parser.add_argument('--save_dir',
                         nargs='+',
                         default=['./data', './results'])
-    parser.add_argument('--dataset_mode', default='default')
     args = parser.parse_args()
 
-    if args.datasets[0] == 'default':
-        args.datasets = ['mnist', 'cifar-10', 'cifar-100']
-    elif args.datasets[0] == 'ood_v1.5':
-        args.datasets = [
-            'cifar-10', 'cifar-100', 'imagenet-200', 'imagenet-1k'
-        ]
-    elif args.datasets[0] == 'all':
-        args.datasets = list(benchmarks_dict.keys())
+    # 我們只要 svhn 和 tin
+    datasets_to_download = ['svhn', 'tin']
 
-    if args.checkpoints[0] == 'ood':
-        args.checkpoints = [
-            'mnist_lenet', 'cifar10_res18', 'cifar100_res18', 'imagenet_res50'
-        ]
-    elif args.checkpoints[0] == 'ood_v1.5':
-        args.checkpoints = [
-            'cifar10_res18_v1.5', 'cifar100_res18_v1.5',
-            'imagenet200_res18_v1.5', 'imagenet_res50_v1.5'
-        ]
-    elif args.checkpoints[0] == 'all':
-        args.checkpoints = [
-            'mnist_lenet', 'cifar10_res18', 'cifar100_res18', 'imagenet_res50',
-            'osr'
-        ]
+    store_path = args.save_dir[0]
+    if not store_path.endswith('/'):
+        store_path = store_path + '/'
 
-    for content in args.contents:
-        if content == 'datasets':
+    # 下載 benchmark_imglist（必要的資料夾清單）
+    if not os.path.exists(os.path.join(store_path, 'benchmark_imglist')):
+        gdown.download(id=download_id_dict['benchmark_imglist'],
+                       output=store_path)
+        file_path = os.path.join(args.save_dir[0], 'benchmark_imglist.zip')
+        with zipfile.ZipFile(file_path, 'r') as zip_file:
+            zip_file.extractall(store_path)
+        os.remove(file_path)
 
-            store_path = args.save_dir[0]
-            if not store_path.endswith('/'):
-                store_path = store_path + '/'
-            if not os.path.exists(os.path.join(store_path,
-                                               'benchmark_imglist')):
-                gdown.download(id=download_id_dict['benchmark_imglist'],
-                               output=store_path)
-                file_path = os.path.join(args.save_dir[0],
-                                         'benchmark_imglist.zip')
-                with zipfile.ZipFile(file_path, 'r') as zip_file:
-                    zip_file.extractall(store_path)
-                os.remove(file_path)
+    # 下載 svhn 和 tin
+    for dataset in datasets_to_download:
+        download_dataset(dataset, args)
 
-            if args.dataset_mode == 'default' or \
-                    args.dataset_mode == 'benchmark':
-                for benchmark in args.datasets:
-                    for dataset in benchmarks_dict[benchmark]:
-                        download_dataset(dataset, args)
-
-            if args.dataset_mode == 'dataset':
-                for dataset in args.datasets:
-                    download_dataset(dataset, args)
-
-        elif content == 'checkpoints':
-            if 'v1.5' in args.checkpoints[0]:
-                store_path = args.save_dir[1]
-            else:
-                store_path = os.path.join(args.save_dir[1], 'checkpoints/')
-            if not os.path.exists(store_path):
-                os.makedirs(store_path)
-
-            if not store_path.endswith('/'):
-                store_path = store_path + '/'
-
-            for checkpoint in args.checkpoints:
-                if require_download(checkpoint, store_path):
-                    gdown.download(id=download_id_dict[checkpoint],
-                                   output=store_path)
-                    file_path = os.path.join(store_path, checkpoint + '.zip')
-                    with zipfile.ZipFile(file_path, 'r') as zip_file:
-                        zip_file.extractall(store_path)
-                    os.remove(file_path)
