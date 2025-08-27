@@ -159,7 +159,8 @@ if __name__ == '__main__':
         args.datasets = ['mnist', 'cifar-10', 'cifar-100']
     elif args.datasets[0] == 'ood_v1.5':
         args.datasets = [
-            'cifar-10', 'cifar-100', 'imagenet-200', 'imagenet-1k'
+            # 'cifar-10', 'cifar-100', 'imagenet-200', 'imagenet-1k'
+            'imagenet-1k'
         ]
     elif args.datasets[0] == 'all':
         args.datasets = list(benchmarks_dict.keys())
