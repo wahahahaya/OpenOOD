@@ -4,6 +4,6 @@
 # provided by OpenOOD v1.5
 python ./scripts/download/download.py \
     --contents 'datasets' \
-    --datasets svhn tin \
+    --datasets texture \
     --save_dir './data' \
     --dataset_mode 'benchmark'
